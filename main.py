@@ -38,13 +38,13 @@ def recognizeFear(frame, face_locations):
         dominant_emotion = emotion_prediction[0]['dominant_emotion']
         
         if dominant_emotion == 'fear':
-            tempo_medo = time.time() - start_time
+            fear_time = time.time() - start_time
         else:
-            tempo_medo = 0
+            fear_time = 0
             start_time = time.time()
 
         # Check if fear has been detected for more than 2 seconds
-        if tempo_medo >= 2:
+        if fear_time >= 2:
             print("Medo detectado por mais de 2 segundos!")
             
     return
