@@ -30,7 +30,7 @@ POST api/users/{{name}}/photos
 </details>
 
 <details>
-<summary><b>Consult</b> someone's photo searching by its id</summary>
+<summary><b>Read/consult</b> someone's photo searching by its id</summary>
 
 ### Request
 ```http
@@ -47,7 +47,35 @@ GET api/users/{{name}}/photos/{{id}}
 </details>
 
 <details>
-<summary> <b>Delete</b> photo </summary>
+<summary><b>Update</b> a person's photo.</summary>
+
+### Request
+```http
+POST api/users/{{name}}/photos/{{id}}
+```
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `api_key` | `string` | **Required**. API key |
+| `image` | `.jpg, .png` | **Required**. Face image |
+
+### Response
+```javascript
+{
+  "message" : string,
+}
+```
+
+| Status Code | Description |
+| :--- | :--- |
+| 200 | `OK` |
+| 400 | `Bad Request` |
+| 404 | `Not Found` |
+| 500 | `Internal Server Error` |
+
+</details>
+
+<details>
+<summary> <b>Delete</b> a person's photo</summary>
 
 ### Request
 ```http
@@ -106,7 +134,7 @@ POST api/notifications
 </details>
 
 <details>
-<summary><b>Consult</b> a created notification kind</summary>
+<summary><b>Read</b> a created notification kind</summary>
 
 ### Request
 ```http
