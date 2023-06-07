@@ -1,8 +1,8 @@
 # Photo Register :camera_flash:
 The proccess of registering photos in the access control application database will be done by requests on an simple API. One side of the system will be responsible for doing the face recognition, whilst the other will be in charge of registering new allowed people.
 
-## Create
-Create an entry on control access database by sending person's name and photo.
+<details>
+<summary>**Create** an entry on control access database by sending person's name and photo.</summary>
 
 ### Request
 ```http
@@ -27,10 +27,12 @@ POST api/users/{{name}}/photos
 | 404 | `Not Found` |
 | 500 | `Internal Server Error` |
 
+</details>
+
 <hr style="border:0.2px solid gray"> </hr>
 
-## Read
-Consult someone's photo searching by its id
+<details>
+<summary>**Consult** someone's photo searching by its id</summary>
 
 ### Request
 ```http
@@ -44,10 +46,13 @@ GET api/users/{{name}}/photos/{{id}}
 | 404 | `Not Found` |
 | 500 | `Internal Server Error` |
 
+</details>
+
 <hr style="border:0.2px solid gray"> </hr>
 
-## Delete
-Delete photo
+
+<details>
+<summary> **Delete** photo </summary>
 
 ### Request
 ```http
@@ -70,14 +75,15 @@ DELETE api/users/{{name}}/photos/{{id}}
 | 400 | `Bad Request` |
 | 404 | `Not Found` |
 | 500 | `Internal Server Error` |
+</details>
 
 <hr style="border:1px solid gray; border-style: dashed;"> </hr>
 
 # Notification Register :vibration_mode::warning:
 The application might send notifications for the user depending on which configurations he has setted up. For example, an emergency alert may be configured when fear microexpression has been detected for a period of time. In this case, a Telegram message could be sent for the user.
 
-## Create
-Create a notification based on its type
+<details>
+<summary>**Create** a notification based on its type</summary>
 
 ### Request
 ```http
@@ -102,8 +108,11 @@ POST api/notifications
 | 404 | `Not Found` |
 | 500 | `Internal Server Error` |
 
-## Delete
-Delete notification
+</details>
+<hr style="border:0.2px solid gray"> </hr>
+
+<details>
+<summary>**Delete** notification</summary>
 
 ### Request
 ```http
@@ -122,10 +131,13 @@ DELETE api/notifications/{{id}}
 
 | Status Code | Description |
 | :--- | :--- |
-| 201 | `Created` |
+| 200 | `OK` |
 | 400 | `Bad Request` |
 | 404 | `Not Found` |
 | 500 | `Internal Server Error` |
+
+</details>
+<hr style="border:0.2px solid gray"> </hr>
 
 
 
