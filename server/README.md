@@ -78,7 +78,7 @@ DELETE api/users/{{name}}/photos/{{id}}
 The application might send notifications for the user depending on which configurations he has setted up. For example, an emergency alert may be configured when fear microexpression has been detected for a period of time. In this case, a Telegram message could be sent for the user.
 
 <details>
-<summary><b>Create</b> a notification based on its type</summary>
+<summary><b>Create</b> a notification kind based on its type</summary>
 
 ### Request
 ```http
@@ -106,7 +106,62 @@ POST api/notifications
 </details>
 
 <details>
-<summary><b>Delete</b> notification</summary>
+<summary><b>Consult</b> a created notification kind</summary>
+
+### Request
+```http
+GET api/notifications/{{id}}
+```
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `api_key` | `string` | **Required**. API key |
+
+### Response
+```javascript
+{
+  "type" : string,
+}
+```
+
+| Status Code | Description |
+| :--- | :--- |
+| 201 | `OK` |
+| 400 | `Bad Request` |
+| 404 | `Not Found` |
+| 500 | `Internal Server Error` |
+
+</details>
+
+<details>
+<summary><b>Update</b> notification kind</summary>
+
+### Request
+```http
+POST api/notifications/{{id}}
+```
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `api_key` | `string` | **Required**. API key |
+| `type` | `string` | **Required**. New notification type (e.g. "telegram", "email", etc.) |
+
+### Response
+```javascript
+{
+  "message" : string,
+}
+```
+
+| Status Code | Description |
+| :--- | :--- |
+| 200 | `OK` |
+| 400 | `Bad Request` |
+| 404 | `Not Found` |
+| 500 | `Internal Server Error` |
+
+</details>
+
+<details>
+<summary><b>Delete</b> notification kind</summary>
 
 ### Request
 ```http
