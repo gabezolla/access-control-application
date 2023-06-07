@@ -1,7 +1,7 @@
 # Access Control Application
 Access control and microexpression evaluator application for UFABC Graduation Project
 
-# Photo Register
+# Photo Register :camera_flash:
 The proccess of registering photos in the access control application database will be done by requests on an simple API. One side of the system will be responsible for doing the face recognition, whilst the other will be in charge of registering new allowed people.
 
 ## Create
@@ -76,7 +76,7 @@ DELETE api/users/{{name}}/photos/{{id}}
 
 <hr style="border:1px solid gray"> </hr>
 
-# Notification Register
+# Notification Register :vibration_mode::warning:
 The application might send notifications for the user depending on which configurations he has setted up. For example, an emergency alert may be configured when fear microexpression has been detected for a period of time. In this case, a Telegram message could be sent for the user.
 
 ## Create
