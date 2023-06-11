@@ -65,6 +65,12 @@ def getAndUpdateStoredKnownFaces():
         for known_face_file in known_face_files:
             image_path = os.path.join(known_person_folder, known_face_file)
             loaded_face = face_recognition.load_image_file(image_path)
+            
+            face_locations = face_recognition.face_locations(loaded_face)
+            
+            if(len(face_locations) == 0):
+                continue
+                         
             face_encoding = face_recognition.face_encodings(loaded_face)[0]
             known_people_encodings.append(face_encoding)
             known_names.append(known_person_folder_name)
@@ -93,30 +99,17 @@ def recognizePerson(frame):
 def showVideo():
     ret, frame = webcam.read()
     if ret:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        image = Image.fromarray(frame)
-        image = image.resize((640, 480))
-        photo = ImageTk.PhotoImage(image=image)
-        image_label.config(image=photo)
-        image_label.image = photo
         recognizePerson(frame)
-        image_label.after(10, showVideo)
- 
+        cv2.imshow("Webcam", frame)
+    
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        webcam.release()
+        cv2.destroyAllWindows()
+    else:
+        cv2.waitKey(10)
+        showVideo()
+
+# TODO: remove from local storage and store on database 
 known_people_encodings, known_names = getAndUpdateStoredKnownFaces()
 webcam = cv2.VideoCapture(0)
-
-interface = tk.Tk()
-interface.title("Face Recognition Program")
-
-name_input = tk.Entry(interface)
-name_input.pack()
-
-capture_button = tk.Button(interface, text="Capturar Imagem", command=captureImage)
-capture_button.pack()
-    
-image_label = tk.Label(interface)
-image_label.pack()
-    
 showVideo()
-
-interface.mainloop() 
