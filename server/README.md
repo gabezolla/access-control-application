@@ -116,6 +116,7 @@ POST api/notifications
 | :--- | :--- | :--- |
 | `api_key` | `string` | **Required**. API key |
 | `type` | `string` | **Required**. Notification type (e.g. "telegram", "email", etc.) |
+| `contact` | `string` | **Required**. Who will receive the message |
 
 ### Response
 ```javascript
@@ -171,6 +172,7 @@ POST api/notifications/{{id}}
 | :--- | :--- | :--- |
 | `api_key` | `string` | **Required**. API key |
 | `type` | `string` | **Required**. New notification type (e.g. "telegram", "email", etc.) |
+| `contact` | `string` | **Required**. Who will receive the message |
 
 ### Response
 ```javascript
