@@ -1,5 +1,6 @@
 from flask import Flask, request
 from database.db_handler import saveNotification
+from database.encoding_service import storeFace
 import os
 
 app = Flask(__name__)
@@ -14,12 +15,25 @@ def registerPhoto():
         
         if not os.path.exists(path):
             os.makedirs(path)
-
-        image.save(path + image.filename)
+        
+        full_path = path + f"{len(os.listdir(path)) + 1}.png"
+        image.save(full_path)
+        
+        storeFace(full_path, name)
 
         return {'mensagem': 'Foto cadastrada com sucesso'}
     else:
         return {'mensagem': 'Nenhuma imagem foi enviada'}, 400
+    
+@app.route('/api/photos/<name>/files/<filename>', methods=['DELETE'])
+def deletePhoto(name, filename):
+    path = f'user-data/{name}/{filename}'
+
+    if os.path.exists(path):
+        os.remove(path)
+        return {'mensagem': 'Foto deletada com sucesso'}
+    else:
+        return {'mensagem': 'Foto não encontrada'}, 404
 
 @app.route('/api/notifications', methods=['POST'])
 def registerNotification():
