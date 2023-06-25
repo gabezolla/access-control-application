@@ -1,27 +1,11 @@
-import tkinter as tk
 import cv2
 import os
-from PIL import Image, ImageTk
+import numpy as np
 import face_recognition
 from deepface import DeepFace
 import time
-
-def captureImage():
-    user_name = name_input.get()
-    _, frame = webcam.read()
-    
-    directory = os.path.join("user-data", user_name)
-    
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    
-    archive_name = f"{len(os.listdir(directory)) + 1}.png"
-    archive_path = os.path.join(directory, archive_name)
-    
-    cv2.imwrite(archive_path, frame)
-    
-    global known_people_encodings, known_names 
-    known_people_encodings, known_names = getAndUpdateStoredKnownFaces()
+import json
+from database.db_handler import getEncodings, saveEncoding
     
 def recognizeFear(frame, face_locations):
     # Convert from BGR to RGB to use it on face_recognition
@@ -48,8 +32,9 @@ def recognizeFear(frame, face_locations):
             print("Medo detectado por mais de 2 segundos!")
             
     return
-        
-def getAndUpdateStoredKnownFaces():
+
+   
+""" def getAndUpdateStoredKnownFaces():
     known_people_encodings = []
     known_names = []
     main_directory = "user-data"  
@@ -75,24 +60,32 @@ def getAndUpdateStoredKnownFaces():
             known_people_encodings.append(face_encoding)
             known_names.append(known_person_folder_name)
             
-    return known_people_encodings, known_names
+    return known_people_encodings, known_names """
             
 def recognizePerson(frame):
     # Convert from BGR to RGB to use it on face_recognition
     rgb_frame = frame[:, :, ::-1]
     detected_faces = face_recognition.face_locations(rgb_frame)
+    known_encodings = []
+    known_names = []
     
     if len(detected_faces) == 0:
         return
-        
+    
+    name_data, encoding_data = getEncodings()
+            
+    for data in encoding_data:
+        face_encoding = json.loads(data)
+        known_encodings.append(np.array(face_encoding)) 
+                       
     faces_encodings = face_recognition.face_encodings(rgb_frame, detected_faces)
     
     for face_encoding, detected_face in zip(faces_encodings, detected_faces):
-        is_known_person = face_recognition.compare_faces(known_people_encodings, face_encoding)
+        is_known_person = face_recognition.compare_faces(known_encodings, face_encoding)
         
         if True in is_known_person:
             index_found = is_known_person.index(True)
-            person_name = known_names[index_found]
+            person_name = name_data[index_found]
             print(f"{person_name} identificado. Acesso liberado.")            
     return
 
@@ -107,9 +100,9 @@ def showVideo():
         cv2.destroyAllWindows()
     else:
         cv2.waitKey(10)
-        showVideo()
+        showVideo() 
 
 # TODO: remove from local storage and store on database 
-known_people_encodings, known_names = getAndUpdateStoredKnownFaces()
+# known_people_encodings, known_names = getAndUpdateStoredKnownFaces()
 webcam = cv2.VideoCapture(0)
 showVideo()
