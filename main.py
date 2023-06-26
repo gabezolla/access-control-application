@@ -5,7 +5,7 @@ import face_recognition
 from deepface import DeepFace
 import time
 import json
-from database.db_handler import getEncodings, saveEncoding
+import requests
     
 def recognizeFear(frame, face_locations):
     # Convert from BGR to RGB to use it on face_recognition
@@ -67,16 +67,19 @@ def recognizePerson(frame):
     rgb_frame = frame[:, :, ::-1]
     detected_faces = face_recognition.face_locations(rgb_frame)
     known_encodings = []
-    known_names = []
     
     if len(detected_faces) == 0:
         return
+
+    response = requests.get('http://127.0.0.1:5000/api/encodings')
+    data = response.json()
     
-    name_data, encoding_data = getEncodings()
-            
-    for data in encoding_data:
-        face_encoding = json.loads(data)
-        known_encodings.append(np.array(face_encoding)) 
+    string_encodings = data['encodings']
+    for string_encoding in string_encodings:   
+        encoding_data = eval(string_encoding)     
+        known_encodings.append(encoding_data)
+    
+    known_names = np.array(data['names'])
                        
     faces_encodings = face_recognition.face_encodings(rgb_frame, detected_faces)
     
@@ -85,7 +88,7 @@ def recognizePerson(frame):
         
         if True in is_known_person:
             index_found = is_known_person.index(True)
-            person_name = name_data[index_found]
+            person_name = known_names[index_found]
             print(f"{person_name} identificado. Acesso liberado.")            
     return
 
@@ -102,7 +105,5 @@ def showVideo():
         cv2.waitKey(10)
         showVideo() 
 
-# TODO: remove from local storage and store on database 
-# known_people_encodings, known_names = getAndUpdateStoredKnownFaces()
 webcam = cv2.VideoCapture(0)
 showVideo()
