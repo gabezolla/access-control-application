@@ -1,3 +1,4 @@
+from flask import jsonify
 import mysql.connector
 import uuid
 import json
@@ -78,7 +79,7 @@ def saveEncoding(name, encoding):
             cursor.close()
             connection.close()
 
-def getEncodings():
+def getEncodingsFromDatabase():
     connection = connect()
     if connection:
         try:
@@ -96,7 +97,7 @@ def getEncodings():
             connection.close()
     else:
         print("Failed to connect to the database")
-
+    return [], []
             
 def deleteEncodings(id):
     connection = connect()

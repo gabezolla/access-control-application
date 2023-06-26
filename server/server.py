@@ -1,9 +1,15 @@
-from flask import Flask, request
-from database.db_handler import saveNotification
+from flask import Flask, request, jsonify
+from database.db_handler import saveNotification, getEncodingsFromDatabase
 from database.encoding_service import storeFace
 import os
 
 app = Flask(__name__)
+
+@app.route('/api/encodings', methods=['GET'])
+def getEncodings():
+    names, encodings = getEncodingsFromDatabase()
+    encodings_dict = {"names": names, "encodings": encodings}
+    return jsonify(encodings_dict)    
 
 @app.route('/api/photos', methods=['POST'])
 def registerPhoto():
