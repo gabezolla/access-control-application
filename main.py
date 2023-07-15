@@ -61,6 +61,22 @@ def recognizeFear(frame, face_locations):
             known_names.append(known_person_folder_name)
             
     return known_people_encodings, known_names """
+    
+def sendNotification(message):
+    url = "http://127.0.0.1:5000" # Migrar para appSettings
+    getIdsPath = "api/notifications/telegram/ids"
+    sendMessagePath = "api/notifications/send"
+    
+    ids = requests.get(f"{url}/{getIdsPath}").json()
+    
+    for id in ids:
+        data = {
+        'chat_id': id,
+        'message': message
+        }
+        message_result = requests.post(f"{url}/{sendMessagePath}", json=data)
+        print(message_result.json())
+    return
             
 def recognizePerson(frame):
     # Convert from BGR to RGB to use it on face_recognition
@@ -71,7 +87,7 @@ def recognizePerson(frame):
     if len(detected_faces) == 0:
         return
 
-    response = requests.get('http://127.0.0.1:5000/api/encodings')
+    response = requests.get('http://127.0.0.1:5000/api/encodings') # Migrar para appSettings
     data = response.json()
     
     string_encodings = data['encodings']
@@ -105,5 +121,6 @@ def showVideo():
         cv2.waitKey(10)
         showVideo() 
 
+# sendNotification("Hello")
 webcam = cv2.VideoCapture(0)
 showVideo()
