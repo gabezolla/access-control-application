@@ -1,6 +1,8 @@
 from flask import Flask, request, jsonify
-from database.db_handler import saveNotification, getEncodingsFromDatabase
+from telethon import TelegramClient
+from database.db_handler import saveNotification, getEncodingsFromDatabase, getNotifications, saveChatId, getChatIdsFromDatabase
 from database.encoding_service import storeFace
+from server.message_handler import getChatsIds, sendMessage
 import os
 
 app = Flask(__name__)
@@ -13,7 +15,7 @@ def getEncodings():
 
 @app.route('/api/photos', methods=['POST'])
 def registerPhoto():
-    name = request.form.get('name')
+    name = request.form.get('name') # TODO: Change all .form. into .json.
     image = request.files.get('image')
 
     if image:
@@ -56,6 +58,46 @@ def registerNotification():
         
     else:
         return {'mensagem': 'Tipo de notificação não permitido'}, 400
+    
+@app.route('/api/notifications/telegram', methods=['POST'])
+def registerChatId():
+    chatId = request.json.get("chat_id")
+    if not chatId:
+        chatId = getChatsIds()
+    
+    if not chatId or chatId is int:
+       return {'mensagem': 'Nenhum chat_id encontrado'}, 404 
+          
+    try:
+        saveChatId(chatId)
+        return {'mensagem': 'chat_id registrado com sucesso'}, 201 
+    except Exception as error:
+        return {'mensagem': f'Erro ao tentar salvar chat_id. {error}'}, 500
+    
+@app.route('/api/notifications/send', methods=['POST'])
+def fireTelegramNotification():
+    chat_id = request.json['chat_id']
+    message = request.json['message']
+
+    statusCode = sendMessage(chat_id, message)
+    
+    if statusCode == 200:
+        return {'mensagem': 'Mensagem enviada com sucesso'}, statusCode
+    
+    return {'mensagem': 'Erro ao tentar enviar mensagem no Telegram'}, statusCode
+        
+
+@app.route('/api/notifications/telegram/ids', methods=['GET'])
+def getTelegramChats():
+    result = getChatsIds()
+    
+    if result is int:
+        result = getChatIdsFromDatabase()
+    
+    if not result or result is int:
+        return {'mensagem': 'Erro ao tentar recuperar os chats do Telegram'}, 500
+    
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run()
