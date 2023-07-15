@@ -61,6 +61,43 @@ def getNotifications():
     else:
         print("Failed to connect to the database")
 
+# ChatIds        
+def saveChatId(chat_id):
+    connection = connect()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            sql = "INSERT INTO chat_ids (chat_id) VALUES (%s)"
+            values = (chat_id,)
+            cursor.execute(sql, values)
+            connection.commit()
+            print(f"Data successfully saved.")
+        except mysql.connector.Error as error:
+            print(f"Error saving data: {error}")
+        finally:
+            cursor.close()
+            connection.close()
+
+def getChatIdsFromDatabase():
+    connection = connect()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            sql = "SELECT chat_id FROM chat_ids"
+            cursor.execute(sql)
+            results = cursor.fetchall()
+            chatIds = []
+            for result in results:
+                chatIds.append(result[0])
+            return chatIds
+        except mysql.connector.Error as error:
+            print(f"Error retrieving chatIds: {error}")
+        finally:
+            cursor.close()
+            connection.close()
+    else:
+        print("Failed to connect to the database")
+
 # Encodings
 def saveEncoding(name, encoding):
     connection = connect()
@@ -112,7 +149,7 @@ def deleteEncodings(id):
             connection.commit()
             cursor.close()
             connection.close()
-            return {'mensagem': 'Encoding deletado com sucesso'}
+            return {'mensagem': 'Encoding successfully deleted'}
         except mysql.connector.Error as error:
             print(f"Error retrieving data: {error}")
         finally:
