@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from telethon import TelegramClient
-from database.db_handler import saveNotification, getEncodingsFromDatabase, getNotifications, saveChatId, getChatIdsFromDatabase
+from database.db_handler import saveNotification, getEncodingsFromDatabase, getNotifications, saveChatId, getChatIdsFromDatabase, authenticateUser
 from database.encoding_service import storeFace
 from server.message_handler import getChatsIds, sendMessage
 import os
@@ -59,6 +59,7 @@ def registerNotification():
     else:
         return {'mensagem': 'Tipo de notificação não permitido'}, 400
     
+# TODO: handle errors with database
 @app.route('/api/notifications/telegram', methods=['POST'])
 def registerChatId():
     chatId = request.json.get("chat_id")
@@ -99,5 +100,21 @@ def getTelegramChats():
     
     return jsonify(result)
 
+# Authentication
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'mensagem': 'Dados de login ausentes'}), 400
+
+    username = data['username']
+    password = data['password']
+    
+    result = authenticateUser(username, password)
+    
+    return jsonify(result)
+    
 if __name__ == '__main__':
     app.run()
+    

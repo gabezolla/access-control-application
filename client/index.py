@@ -1,9 +1,16 @@
 import streamlit as st
 import requests
-# from database.db_handler import saveNotification, getNotifications TODO: check ModuleNotFoundError: No module named 'database' when running streamlit run
+import json
+
+typeAuthentication = None
+
+def get_config():
+    with open('./config/config.json', 'r') as file:
+        config = json.load(file)
+    return config
 
 def registerPhoto(name, image):
-    url = 'http://localhost:5000/api/photos'  # TODO: Mover para um arquivo de configuração
+    url = get_config().get('server_url')  # TODO: Mover para um arquivo de configuração
 
     data = {'name': name}
     files = {'image': image}
@@ -18,14 +25,58 @@ def registerNotification(notification_type, contact):
 
 def main():
     st.title('Sistema de Cadastro')
+    
+    if not checkAuthenticated():
+        tabs = st.sidebar.radio("Selecione a opção:", {"Login": "Login"})
+        build_login_tab()
+        
+    else:
+        user_type = getAuthenticationType()
+        
+        if user_type == 'admin':
+            tabs = st.sidebar.radio("Selecione a opção:", ("Cadastro de Fotos", "Cadastro de Notificações"))
+            if tabs == "Cadastro de Fotos":
+                build_upload_photo_tab()
 
-    tabs = st.sidebar.radio("Selecione a opção:", ("Cadastro de Fotos", "Cadastro de Notificações"))
+            elif tabs == "Cadastro de Notificações":
+                build_notification_tab()
 
-    if tabs == "Cadastro de Fotos":
-        build_upload_photo_tab()
+# Create folders for each page        
+def build_login_tab():
+    st.header("Página de Login")
+    username = st.text_input("Nome de usuário:")
+    password = st.text_input("Senha:", type="password")
 
-    elif tabs == "Cadastro de Notificações":
-        build_notification_tab()
+    if st.button('Entrar'):
+        if authenticateUser(username, password):
+            st.success("Login bem-sucedido!")
+            st.experimental_rerun()
+        else:
+            st.error("Nome de usuário ou senha incorretos. Tente novamente.")
+
+def checkAuthenticated():
+    return getattr(st.session_state, 'is_authenticated', False)
+
+def getAuthenticationType():
+    return getattr(st.session_state, 'user_type', None)
+
+def authenticateUser(username, password):
+    url = get_config().get('server_url')
+    loginRoute = "/api/login"
+    
+    data = {
+        'username': username,
+        'password': password
+    }
+    
+    response = requests.post(f"{url}/{loginRoute}", json=data)
+    user_data = response.json()
+    if data:
+        st.session_state.is_authenticated = True
+        st.session_state.user_type = user_data['type']
+        return True
+        
+    return False
 
 def build_upload_photo_tab(): 
     st.header("Cadastro de Fotos")
@@ -53,6 +104,7 @@ def build_notification_tab():
 
         st.header("Lista de Notificações")
         # notifications = getNotifications() TODO: check ModuleNotFoundError: No module named 'database' when running streamlit run
+        # call API instead of getNotifications()
         notifications = []
 
         for notification in notifications:

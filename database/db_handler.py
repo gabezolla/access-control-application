@@ -158,4 +158,28 @@ def deleteEncodings(id):
 
     return encodings
 
+def authenticateUser(username, password):
+    connection = connect()
+    
+    if connection:
+        try:
+            cursor = connection.cursor(dictionary=True)
+            sql = "SELECT users.id, users.type_id, users_type.type FROM users JOIN users_type ON users.type_id = users_type.id WHERE users.login = %s AND users.password = %s"
+            values = (username, password)
+            cursor.execute(sql, values)
+            user_data = cursor.fetchone()
+            
+            if user_data:
+                return user_data
+            else:
+                return None
+        except mysql.connector.Error as error:
+            print(f"Error retrieving data: {error}")
+        finally:
+            cursor.close()
+            connection.close()
+
+    return None
+
+
     
