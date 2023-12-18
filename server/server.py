@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from telethon import TelegramClient
-from database.db_handler import saveNotification, getEncodingsFromDatabase, getNotifications, saveChatId, getChatIdsFromDatabase, authenticateUser
+from database.db_handler import *
 from database.encoding_service import storeFace
 from server.message_handler import getChatsIds, sendMessage
 import os
@@ -112,6 +112,12 @@ def login():
     password = data['password']
     
     result = authenticateUser(username, password)
+    
+    return jsonify(result)
+
+@app.route('/api/admin', methods=['GET'])
+def checkAdmin():
+    result = searchForAdmin();
     
     return jsonify(result)
     

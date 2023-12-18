@@ -26,7 +26,11 @@ def registerNotification(notification_type, contact):
 def main():
     st.title('Sistema de Cadastro')
     
-    if not checkAuthenticated():
+    if hasNoAdmin():
+        tabs = st.sidebar.radio("Selecione a opção:", {"Registro": "Registro"})
+        build_register_tab()        
+    
+    elif not checkAuthenticated():
         tabs = st.sidebar.radio("Selecione a opção:", {"Login": "Login"})
         build_login_tab()
         
@@ -53,6 +57,9 @@ def build_login_tab():
             st.experimental_rerun()
         else:
             st.error("Nome de usuário ou senha incorretos. Tente novamente.")
+            
+def build_register_tab():
+    st.header("Página de Registro")
 
 def checkAuthenticated():
     return getattr(st.session_state, 'is_authenticated', False)
@@ -71,11 +78,21 @@ def authenticateUser(username, password):
     
     response = requests.post(f"{url}/{loginRoute}", json=data)
     user_data = response.json()
-    if data:
+    if user_data:
         st.session_state.is_authenticated = True
         st.session_state.user_type = user_data['type']
         return True
         
+    return False
+
+def hasNoAdmin():
+    url = get_config().get('server_url')
+    fistAccessRoute = "/api/admin"
+    
+    response = requests.get(f"{url}/{fistAccessRoute}")
+    user_data = response.json()
+    if user_data:
+        return True        
     return False
 
 def build_upload_photo_tab(): 

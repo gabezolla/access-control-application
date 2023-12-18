@@ -178,8 +178,28 @@ def authenticateUser(username, password):
         finally:
             cursor.close()
             connection.close()
-
     return None
+
+def searchForAdmin():
+    connection = connect()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            sql = "SELECT users.id, users.type_id, users_type.type FROM users JOIN users_type ON users.type_id = users_type.id WHERE users_type.type = 'admin'"
+            cursor.execute(sql)
+            user_data = cursor.fetchone()
+                        
+            if user_data:
+                return user_data
+            else:
+                return None
+        except mysql.connector.Error as error:
+                print(f"Error retrieving data: {error}")
+        finally:
+            cursor.close()
+            connection.close()
+        return None
+    
 
 
     
