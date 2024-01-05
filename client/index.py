@@ -9,10 +9,15 @@ def get_config():
         config = json.load(file)
     return config
 
-def registerPhoto(name, image):
-    url = get_config().get('server_url')  # TODO: Mover para um arquivo de configuração
+# TODO: mover para um handler?
+def registerPhoto(name, image, user_type):
+    url = f"{get_config().get('server_url')}/api/photos"
 
-    data = {'name': name}
+    data = {
+        'name': name,
+        'user_type': user_type
+    }
+    
     files = {'image': image}
 
     response = requests.post(url, data=data, files=files)
@@ -87,9 +92,9 @@ def authenticateUser(username, password):
 
 def hasNoAdmin():
     url = get_config().get('server_url')
-    fistAccessRoute = "/api/admin"
+    firstAccessRoute = "/api/admin"
     
-    response = requests.get(f"{url}/{fistAccessRoute}")
+    response = requests.get(f"{url}/{firstAccessRoute}")
     user_data = response.json()
     if user_data:
         return True        
@@ -97,16 +102,27 @@ def hasNoAdmin():
 
 def build_upload_photo_tab(): 
     st.header("Cadastro de Fotos")
+    
     first_name = st.text_input("Nome:")
     last_name = st.text_input("Sobrenome:")
     name = f"{first_name.lower()}-{last_name.lower()}"
+    
     image = st.file_uploader("Imagem:", type=['jpg', 'jpeg', 'png'])
+    
+    user_type = st.selectbox("Tipo de Usuário:", ["Common", "Admin", "Temporary"])
+
+    if user_type == "Admin":
+        login = st.text_input("Login:")
+        password = st.text_input("Senha:", type="password")
+    else:
+        login = None
+        password = None
 
     if st.button('Cadastrar'):
-        if first_name and last_name and image:
-            registerPhoto(name, image)
+        if first_name and last_name and image and user_type:
+            registerPhoto(name, image, user_type, login, password)
         else:
-            st.warning('Por favor, preencha o nome e selecione uma imagem.')
+            st.warning('Por favor, preencha o nome, selecione uma imagem e escolha um tipo de usuário.')
             
 def build_notification_tab():
     st.header("Cadastro de Notificações")
