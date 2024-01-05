@@ -158,6 +158,29 @@ def deleteEncodings(id):
 
     return encodings
 
+# Users
+def saveUser(id, user_type, login="", password=""):
+    connection = connect()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            
+            type_sql = "INSERT INTO" + user_type + "(id) VALUES (%s)"
+            type_values = (id)
+            
+            user_sql = "INSERT INTO users (id, login, password, type_id) VALUES (%s, %s, %s, %s)"
+            user_values = (id, login, password, id)
+            
+            cursor.execute(type_sql, type_values)
+            cursor.execute(user_sql, user_values)
+            connection.commit()
+            print("Data successfully saved")
+        except mysql.connector.Error as error:
+            print(f"Error saving data: {error}")
+        finally:
+            cursor.close()
+            connection.close()
+
 def authenticateUser(username, password):
     connection = connect()
     
@@ -185,7 +208,7 @@ def searchForAdmin():
     if connection:
         try:
             cursor = connection.cursor()
-            sql = "SELECT users.id, users.type_id, users_type.type FROM users JOIN users_type ON users.type_id = users_type.id WHERE users_type.type = 'admin'"
+            sql = "SELECT * from admins"
             cursor.execute(sql)
             user_data = cursor.fetchone()
                         

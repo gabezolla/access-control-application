@@ -4,6 +4,7 @@ from database.db_handler import *
 from database.encoding_service import storeFace
 from server.message_handler import getChatsIds, sendMessage
 import os
+import uuid
 
 app = Flask(__name__)
 
@@ -16,7 +17,9 @@ def getEncodings():
 @app.route('/api/photos', methods=['POST'])
 def registerPhoto():
     name = request.form.get('name') # TODO: Change all .form. into .json.
+    user_type = request.form.get('user_type')
     image = request.files.get('image')
+    uuid = str(uuid.uuid4())
 
     if image:
         path = f'user-data/{name}/'
@@ -27,6 +30,7 @@ def registerPhoto():
         full_path = path + f"{len(os.listdir(path)) + 1}.png"
         image.save(full_path)
         
+        saveUser(uuid, user_type.lower())        
         storeFace(full_path, name)
 
         return {'mensagem': 'Foto cadastrada com sucesso'}
@@ -115,9 +119,22 @@ def login():
     
     return jsonify(result)
 
+# TODO: FINISH
+@app.route('/api/notifications/telegram', methods=['POST'])
+def registerUser():
+    login = request.json.get("login")
+    password = request.json.get("password")
+    user_type = request.json.get("user_type")
+             
+    try:
+        saveUser(uuid, login, password, user_type)
+        return {'mensagem': 'Usuário registrado com sucesso'}, 201 
+    except Exception as error:
+        return {'mensagem': f'Erro ao tentar salvar usuário. {error}'}, 500
+
 @app.route('/api/admin', methods=['GET'])
 def checkAdmin():
-    result = searchForAdmin();
+    result = searchForAdmin()
     
     return jsonify(result)
     
