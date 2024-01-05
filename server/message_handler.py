@@ -4,7 +4,7 @@ import os
 
 def loadConfig():  
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    config_file_path = os.path.join(current_dir, 'appSettings.json')
+    config_file_path = os.path.join(current_dir, 'server_config.json')
     
     with open(config_file_path) as config_file:
         config_data = json.load(config_file)
