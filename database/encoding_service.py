@@ -26,14 +26,14 @@ def storeAllFaces():
             face_encoding = face_recognition.face_encodings(loaded_face)[0]
             saveEncoding(known_person_folder_name, face_encoding)
 
-def storeFace(full_path, name):
+def storeFace(full_path, name, guid):
     loaded_face = face_recognition.load_image_file(full_path)            
     face_locations = face_recognition.face_locations(loaded_face)
     if(len(face_locations) == 0):
         return
     face_encoding = face_recognition.face_encodings(loaded_face)[0]
     json_encoding = json.dumps(face_encoding.tolist())
-    saveEncoding(name, json_encoding)
+    saveEncoding(name, json_encoding, guid)
     
     
     

@@ -2,15 +2,13 @@ import streamlit as st
 import requests
 import json
 
-typeAuthentication = None
-
 def get_config():
     with open('./config/config.json', 'r') as file:
         config = json.load(file)
     return config
 
 # TODO: mover para um handler?
-def registerPhoto(name, image, user_type):
+def registerPhoto(name, image, user_type, login="", password=""):
     url = f"{get_config().get('server_url')}/api/photos"
 
     data = {
@@ -21,11 +19,9 @@ def registerPhoto(name, image, user_type):
     files = {'image': image}
 
     response = requests.post(url, data=data, files=files)
-
-    st.write(response.json())
+    print("User registered")
 
 def registerNotification(notification_type, contact):
-    # saveNotification(notification_type, contact) TODO: check ModuleNotFoundError: No module named 'database' when running streamlit run
     st.write(f"Notificação do tipo '{notification_type}' cadastrada para o contato '{contact}'.")
 
 def main():
@@ -62,9 +58,25 @@ def build_login_tab():
             st.experimental_rerun()
         else:
             st.error("Nome de usuário ou senha incorretos. Tente novamente.")
-            
+         
+# TODO: DEVELOP THIS TAB   
 def build_register_tab():
     st.header("Página de Registro")
+    username = st.text_input("Nome de usuário:")
+    password = st.text_input("Senha:", type="password")
+    user_type = st.selectbox("Tipo de Usuário:", ["Common", "Admin", "Temporary"])    
+
+def createUser(username, password, user_type):
+    url = get_config().get('server_url')
+    registerRoute = "/api/user"
+    data = {
+        'username': username,
+        'password': password,
+        'user_type': user_type
+    }
+    
+    response = requests.post(f"{url}/{registerRoute}", json=data)
+    
 
 def checkAuthenticated():
     return getattr(st.session_state, 'is_authenticated', False)
@@ -97,8 +109,8 @@ def hasNoAdmin():
     response = requests.get(f"{url}/{firstAccessRoute}")
     user_data = response.json()
     if user_data:
-        return True        
-    return False
+        return False        
+    return True
 
 def build_upload_photo_tab(): 
     st.header("Cadastro de Fotos")
@@ -136,7 +148,6 @@ def build_notification_tab():
             st.warning('Por favor, selecione um tipo de notificação e preencha o contato.')
 
         st.header("Lista de Notificações")
-        # notifications = getNotifications() TODO: check ModuleNotFoundError: No module named 'database' when running streamlit run
         # call API instead of getNotifications()
         notifications = []
 

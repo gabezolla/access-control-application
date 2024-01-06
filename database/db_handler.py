@@ -99,14 +99,14 @@ def getChatIdsFromDatabase():
         print("Failed to connect to the database")
 
 # Encodings
-def saveEncoding(name, encoding):
+def saveEncoding(name, encoding, guid):
     connection = connect()
     if connection:
         try:
             id = str(uuid.uuid4())
             cursor = connection.cursor()
-            sql = "INSERT INTO encodings (id, name, encoding) VALUES (%s, %s, %s)"
-            values = (id, name, encoding)
+            sql = "INSERT INTO encodings (id, name, encoding, user_id) VALUES (%s, %s, %s, %s)"
+            values = (id, name, encoding, guid)
             cursor.execute(sql, values)
             connection.commit()
             print("Data successfully saved")
@@ -165,8 +165,8 @@ def saveUser(id, user_type, login="", password=""):
         try:
             cursor = connection.cursor()
             
-            type_sql = "INSERT INTO" + user_type + "(id) VALUES (%s)"
-            type_values = (id)
+            type_sql = "INSERT INTO users_type (id, type) VALUES (%s, %s)"
+            type_values = (id, user_type)
             
             user_sql = "INSERT INTO users (id, login, password, type_id) VALUES (%s, %s, %s, %s)"
             user_values = (id, login, password, id)
@@ -208,7 +208,7 @@ def searchForAdmin():
     if connection:
         try:
             cursor = connection.cursor()
-            sql = "SELECT * from admins"
+            sql = "SELECT users.id, users.type_id, users_type.type FROM users JOIN users_type ON users.type_id = users_type.id WHERE users_type.type = 'admin'"
             cursor.execute(sql)
             user_data = cursor.fetchone()
                         
