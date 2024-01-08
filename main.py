@@ -4,36 +4,30 @@ import numpy as np
 import face_recognition
 from deepface import DeepFace
 import time
+import uuid
 import json
 import requests
+
+def get_config():
+    with open('config/config.json', 'r') as file:
+        config = json.load(file)
+    return config
     
-def recognizeFear(frame, face_locations):
+def recognizeFear(frame, face_location, name):
     # Convert from BGR to RGB to use it on face_recognition
     rgb_frame = frame[:, :, ::-1]
     
-    fear_time = 0
-    start_time = time.time()
-    
-    for face_location in face_locations:
-        top, right, bottom, left = face_location
-        face_image = rgb_frame[top:bottom, left:right]
+    top, right, bottom, left = face_location
+    face_image = rgb_frame[top:bottom, left:right]
         
-        emotion_prediction = DeepFace.analyze(face_image, actions=['emotion'])
-        dominant_emotion = emotion_prediction[0]['dominant_emotion']
+    emotion_prediction = DeepFace.analyze(face_image, actions=['emotion'], enforce_detection = False, silent=True)
+    dominant_emotion = emotion_prediction[0]['dominant_emotion']
         
-        if dominant_emotion == 'fear':
-            fear_time = time.time() - start_time
-        else:
-            fear_time = 0
-            start_time = time.time()
-
-        # Check if fear has been detected for more than 2 seconds
-        if fear_time >= 2:
-            print("Medo detectado por mais de 2 segundos!")
-            
+    if dominant_emotion == 'fear':
+        print(f"Fear detected for user {name}!")
+        sendNotification(f"Fear detected for user {name}!")
     return
 
-   
 """ def getAndUpdateStoredKnownFaces():
     known_people_encodings = []
     known_names = []
@@ -63,7 +57,6 @@ def recognizeFear(frame, face_locations):
     return known_people_encodings, known_names """
     
 def sendNotification(message):
-    url = "http://127.0.0.1:5000" # Migrar para appSettings
     getIdsPath = "api/notifications/telegram/ids"
     sendMessagePath = "api/notifications/send"
     
@@ -87,7 +80,7 @@ def recognizePerson(frame):
     if len(detected_faces) == 0:
         return
 
-    response = requests.get('http://127.0.0.1:5000/api/encodings') # Migrar para appSettings
+    response = requests.get(f'{url}/api/encodings') # Migrar para appSettings
     data = response.json()
     
     string_encodings = data['encodings']
@@ -105,6 +98,7 @@ def recognizePerson(frame):
         if True in is_known_person:
             index_found = is_known_person.index(True)
             person_name = known_names[index_found]
+            recognizeFear(rgb_frame, detected_face, person_name)
             print(f"{person_name} identificado. Acesso liberado.")            
     return
 
@@ -121,6 +115,20 @@ def showVideo():
         cv2.waitKey(10)
         showVideo() 
 
-# sendNotification("Hello")
+def resolveDeviceId():
+    mac_address = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) for elements in range(5, -1, -1)])
+    
+    device_id = str(uuid.uuid5(uuid.NAMESPACE_X500, mac_address))
+    
+    data = {
+        'device_id': device_id        
+    }
+        
+    message_result = requests.post(f"{url}/api/devices", json=data)
+    
+    return device_id
+
 webcam = cv2.VideoCapture(0)
-showVideo()
+url = get_config().get('server_url')
+print(resolveDeviceId())
+showVideo() 
