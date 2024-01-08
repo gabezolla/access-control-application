@@ -223,6 +223,46 @@ def searchForAdmin():
             connection.close()
         return None
     
-
-
-    
+# Logs - Devices
+def registerLog(device_id, time, identified_user, accuracy):
+    connection = connect()
+    if connection:
+        try:
+            cursor = connection.cursor()
+            select = f"SELECT user_id FROM encodings where name = '{identified_user}'"
+            cursor.execute(select)
+            user_id = cursor.fetchone()
+            
+            if not user_id:
+                user_id = ""
+            
+            log_id = str(uuid.uuid4())
+            
+            sql = "INSERT INTO devices_logs (log_id, device_id, time, user_id, accuracy) VALUES (%s, %s, %s, %s, %s)"
+            values = (log_id, device_id, time, user_id, accuracy)
+            
+            cursor.execute(sql, values)
+            connection.commit()
+            print("Data successfully saved")
+        except mysql.connector.Error as error:
+            print(f"Error saving data: {error}")
+        finally:
+            cursor.close()
+            connection.close()
+            
+def registerDevice(deviceId):
+    connection = connect()
+    if connection:
+        try:
+            id = str(uuid.uuid4())
+            cursor = connection.cursor()
+            sql = "INSERT INTO devices (id) VALUES (%s)"
+            values = (id,)
+            cursor.execute(sql, values)
+            connection.commit()
+            print("Data successfully saved")
+        except mysql.connector.Error as error:
+            print(f"Error saving data: {error}")
+        finally:
+            cursor.close()
+            connection.close()

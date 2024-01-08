@@ -14,6 +14,7 @@ def getEncodings():
     encodings_dict = {"names": names, "encodings": encodings}
     return jsonify(encodings_dict)    
 
+# Change route and everything else to 'user' instead of 'photos'
 @app.route('/api/photos', methods=['POST'])
 def registerPhoto():
     name = request.form.get('name') # TODO: Change all .form. into .json.
@@ -119,6 +120,44 @@ def login():
     
     return jsonify(result)
 
+@app.route('/api/admin', methods=['GET'])
+def checkAdmin():
+    result = searchForAdmin()
+    print(result)
+    
+    return jsonify(result)
+
+# Device Logs
+@app.route('/api/logs', methods=['POST'])
+def storeLogs():
+    data = request.get_json()
+
+    if not data or 'user' not in data or 'time' not in data or 'device_id' not in data or 'identified_user' not in data or 'accuracy' not in data:
+        return jsonify({'mensagem': 'Dados para registro de log insuficientes'}), 400
+
+    user = data['user']
+    device_id = data['device_id']
+    time = data['time']
+    identified_user = data['identified_user']
+    accuracy = data['accuracy']
+    
+    result = registerLog(user, device_id, time, identified_user, accuracy)
+    
+    return jsonify(result)
+
+@app.route('/api/devices', methods=['POST'])
+def storeDevice():
+    data = request.get_json()
+
+    if not data or 'device_id' not in data:
+        return jsonify({'mensagem': 'Dados para registro de dispositivo'}), 400
+
+    device_id = data['device_id']
+    
+    result = registerDevice(device_id)
+    
+    return jsonify(result)
+
 # TODO: FINISH
 @app.route('/api/user', methods=['POST'])
 def registerUser():
@@ -132,13 +171,6 @@ def registerUser():
         return {'mensagem': 'Usuário registrado com sucesso'}, 201 
     except Exception as error:
         return {'mensagem': f'Erro ao tentar salvar usuário. {error}'}, 500
-
-@app.route('/api/admin', methods=['GET'])
-def checkAdmin():
-    result = searchForAdmin()
-    print(result)
-    
-    return jsonify(result)
     
 if __name__ == '__main__':
     app.run()
