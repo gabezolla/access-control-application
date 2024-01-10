@@ -235,11 +235,11 @@ def registerLog(device_id, time, identified_user, accuracy):
             
             if not user_id:
                 user_id = ""
-            
+                
             log_id = str(uuid.uuid4())
             
             sql = "INSERT INTO devices_logs (log_id, device_id, time, user_id, accuracy) VALUES (%s, %s, %s, %s, %s)"
-            values = (log_id, device_id, time, user_id, accuracy)
+            values = (log_id, device_id, time, user_id[0], accuracy)
             
             cursor.execute(sql, values)
             connection.commit()

@@ -132,16 +132,15 @@ def checkAdmin():
 def storeLogs():
     data = request.get_json()
 
-    if not data or 'user' not in data or 'time' not in data or 'device_id' not in data or 'identified_user' not in data or 'accuracy' not in data:
+    if not data or 'time' not in data or 'device_id' not in data or 'identified_user' not in data or 'accuracy' not in data:
         return jsonify({'mensagem': 'Dados para registro de log insuficientes'}), 400
 
-    user = data['user']
     device_id = data['device_id']
     time = data['time']
     identified_user = data['identified_user']
     accuracy = data['accuracy']
     
-    result = registerLog(user, device_id, time, identified_user, accuracy)
+    result = registerLog(device_id, time, identified_user, accuracy)
     
     return jsonify(result)
 
