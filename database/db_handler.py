@@ -254,10 +254,9 @@ def registerDevice(deviceId):
     connection = connect()
     if connection:
         try:
-            id = str(uuid.uuid4())
             cursor = connection.cursor()
             sql = "INSERT INTO devices (id) VALUES (%s)"
-            values = (id,)
+            values = (deviceId,)
             cursor.execute(sql, values)
             connection.commit()
             print("Data successfully saved")
