@@ -7,6 +7,7 @@ import time
 import uuid
 import json
 import requests
+from datetime import datetime
 
 def get_config():
     with open('config/config.json', 'r') as file:
@@ -22,9 +23,12 @@ def recognizeFear(frame, face_location, name):
         
     emotion_prediction = DeepFace.analyze(face_image, actions=['emotion'], enforce_detection = False, silent=True)
     dominant_emotion = emotion_prediction[0]['dominant_emotion']
+    fear_precision = emotion_prediction[0]['emotion']['fear']
         
-    if dominant_emotion == 'fear':
+    if dominant_emotion == 'fear' and fear_precision > 85:
+        print(emotion_prediction[0]['emotion']['fear'])
         print(f"Fear detected for user {name}!")
+        sendLogEvent(name, fear_precision)
         sendNotification(f"Fear detected for user {name}!")
     return
 
@@ -80,7 +84,7 @@ def recognizePerson(frame):
     if len(detected_faces) == 0:
         return
 
-    response = requests.get(f'{url}/api/encodings') # Migrar para appSettings
+    response = requests.get(f'{url}/api/encodings')
     data = response.json()
     
     string_encodings = data['encodings']
@@ -124,11 +128,27 @@ def resolveDeviceId():
         'device_id': device_id        
     }
         
-    message_result = requests.post(f"{url}/api/devices", json=data)
+    requests.post(f"{url}/api/devices", json=data)
     
     return device_id
 
+def sendLogEvent(identified_user, accuracy):
+    time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    data = {
+        'time': time,
+        'device_id': device_id,
+        'identified_user': identified_user,
+        'accuracy': accuracy        
+    }  
+    
+    print(data)  
+
+    requests.post(f"{url}/api/logs", json=data)
+
+    return 
+   
+
 webcam = cv2.VideoCapture(0)
 url = get_config().get('server_url')
-print(resolveDeviceId())
+device_id = resolveDeviceId()
 showVideo() 
