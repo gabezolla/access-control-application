@@ -224,7 +224,7 @@ def searchForAdmin():
         return None
     
 # Logs - Devices
-def registerLog(device_id, time, identified_user, accuracy):
+def registerLog(device_id, time, identified_user, accuracy, type):
     connection = connect()
     if connection:
         try:
@@ -238,8 +238,8 @@ def registerLog(device_id, time, identified_user, accuracy):
                 
             log_id = str(uuid.uuid4())
             
-            sql = "INSERT INTO devices_logs (log_id, device_id, time, user_id, accuracy) VALUES (%s, %s, %s, %s, %s)"
-            values = (log_id, device_id, time, user_id[0], accuracy)
+            sql = "INSERT INTO devices_logs (log_id, device_id, time, user_id, type, accuracy) VALUES (%s, %s, %s, %s, %s, %s)"
+            values = (log_id, device_id, time, user_id[0], type, accuracy)
             
             cursor.execute(sql, values)
             connection.commit()

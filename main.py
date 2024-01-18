@@ -28,7 +28,7 @@ def recognizeFear(frame, face_location, name):
     if dominant_emotion == 'fear' and fear_precision > 85:
         print(emotion_prediction[0]['emotion']['fear'])
         print(f"Fear detected for user {name}!")
-        sendLogEvent(name, fear_precision)
+        sendLogEvent(name, fear_precision, 'fear')
         sendNotification(f"Fear detected for user {name}!")
     return
 
@@ -97,13 +97,16 @@ def recognizePerson(frame):
     faces_encodings = face_recognition.face_encodings(rgb_frame, detected_faces)
     
     for face_encoding, detected_face in zip(faces_encodings, detected_faces):
-        is_known_person = face_recognition.compare_faces(known_encodings, face_encoding)
+        is_known_person = face_recognition.compare_faces(known_encodings, face_encoding, 0.4)
         
         if True in is_known_person:
             index_found = is_known_person.index(True)
+            person_encoding = known_encodings[index_found]
+            accuracy = (1 - face_recognition.face_distance([person_encoding], face_encoding)[0])*100
             person_name = known_names[index_found]
             recognizeFear(rgb_frame, detected_face, person_name)
-            print(f"{person_name} identificado. Acesso liberado.")            
+            print(f"{person_name} identificado. Acesso liberado.")
+            sendLogEvent(person_name, accuracy, 'identification')            
     return
 
 def showVideo():
@@ -132,16 +135,18 @@ def resolveDeviceId():
     
     return device_id
 
-def sendLogEvent(identified_user, accuracy):
+def sendLogEvent(identified_user, accuracy, type):
     time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
+    # ADD A 'TYPE' like FEAR or ACCESS to the logs 
     data = {
         'time': time,
         'device_id': device_id,
         'identified_user': identified_user,
-        'accuracy': accuracy        
+        'accuracy': accuracy,
+        'type': type     
     }  
     
-    print(data)  
+    print(data)
 
     requests.post(f"{url}/api/logs", json=data)
 
