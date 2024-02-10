@@ -228,18 +228,20 @@ def registerLog(device_id, time, identified_user, accuracy, type):
     connection = connect()
     if connection:
         try:
-            cursor = connection.cursor()
+            cursor = connection.cursor(buffered=True)
             select = f"SELECT user_id FROM encodings where name = '{identified_user}'"
             cursor.execute(select)
-            user_id = cursor.fetchone()
+            user_id = cursor.fetchone()[0]
             
             if not user_id:
                 user_id = ""
                 
+            print(user_id)
+                            
             log_id = str(uuid.uuid4())
             
             sql = "INSERT INTO devices_logs (log_id, device_id, time, user_id, type, accuracy) VALUES (%s, %s, %s, %s, %s, %s)"
-            values = (log_id, device_id, time, user_id[0], type, accuracy)
+            values = (log_id, device_id, time, user_id, type, accuracy)
             
             cursor.execute(sql, values)
             connection.commit()
