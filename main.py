@@ -1,3 +1,4 @@
+import threading
 import cv2
 import os
 import numpy as np
@@ -110,17 +111,27 @@ def recognizePerson(frame):
     return
 
 def showVideo():
-    ret, frame = webcam.read()
-    if ret:
-        recognizePerson(frame)
-        cv2.imshow("Webcam", frame)
+    recognize_thread = threading.Thread(target=recognize_person_thread)
+    recognize_thread.daemon = True  # Define a thread como um daemon thread para que ela seja encerrada quando o programa principal terminar
+    recognize_thread.start()
     
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        webcam.release()
-        cv2.destroyAllWindows()
-    else:
-        cv2.waitKey(10)
-        showVideo() 
+    while True:
+        ret, frame = webcam.read()
+        if ret:
+            cv2.imshow("Webcam", frame)
+    
+        key = cv2.waitKey(1)
+        if key == ord('q'):
+            webcam.release()
+            cv2.destroyAllWindows()
+            break
+        
+def recognize_person_thread():
+    while True:
+        ret, frame = webcam.read()
+        if ret:
+            recognizePerson(frame)
+            time.sleep(3)
 
 def resolveDeviceId():
     mac_address = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) for elements in range(5, -1, -1)])
@@ -157,3 +168,4 @@ webcam = cv2.VideoCapture(0)
 url = get_config().get('server_url')
 device_id = resolveDeviceId()
 showVideo() 
+
