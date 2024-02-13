@@ -112,7 +112,6 @@ def recognizePerson(frame):
 
 def showVideo():
     recognize_thread = threading.Thread(target=recognize_person_thread)
-    recognize_thread.daemon = True  # Define a thread como um daemon thread para que ela seja encerrada quando o programa principal terminar
     recognize_thread.start()
     
     while True:
