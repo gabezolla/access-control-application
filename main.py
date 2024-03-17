@@ -76,14 +76,14 @@ def sendNotification(message):
         print(message_result.json())
     return
             
-def recognizePerson(frame):
-    # Convert from BGR to RGB to use it on face_recognition
-    rgb_frame = frame[:, :, ::-1]
-    detected_faces = face_recognition.face_locations(rgb_frame)
+def recognizePerson(frame_log_transformed):
+    detected_faces = face_recognition.face_locations(frame_log_transformed)
     known_encodings = []
     
     if len(detected_faces) == 0:
         return
+    
+    print("Face detectada. Checando base de dados...")
 
     response = requests.get(f'{url}/api/encodings')
     data = response.json()
@@ -94,21 +94,40 @@ def recognizePerson(frame):
         known_encodings.append(encoding_data)
     
     known_names = np.array(data['names'])
-                       
-    faces_encodings = face_recognition.face_encodings(rgb_frame, detected_faces)
+                   
+    faces_encodings = face_recognition.face_encodings(frame_log_transformed, detected_faces)
     
     for face_encoding, detected_face in zip(faces_encodings, detected_faces):
-        is_known_person = face_recognition.compare_faces(known_encodings, face_encoding, 0.4)
+        is_known_person = face_recognition.compare_faces(known_encodings, face_encoding, 0.6)
         
         if True in is_known_person:
             index_found = is_known_person.index(True)
             person_encoding = known_encodings[index_found]
             accuracy = (1 - face_recognition.face_distance([person_encoding], face_encoding)[0])*100
             person_name = known_names[index_found]
-            recognizeFear(rgb_frame, detected_face, person_name)
+            recognizeFear(frame_log_transformed, detected_face, person_name)  # Passa o frame transformado
             print(f"{person_name} identificado. Acesso liberado.")
             sendLogEvent(person_name, accuracy, 'identification')            
     return
+
+def log_transform(image):
+    blue_channel, green_channel, red_channel = cv2.split(image)
+
+    log_blue_channel = np.log1p(blue_channel)
+    log_green_channel = np.log1p(green_channel)
+    log_red_channel = np.log1p(red_channel)
+
+    log_blue_channel = (log_blue_channel - np.min(log_blue_channel)) / (np.max(log_blue_channel) - np.min(log_blue_channel)) * 255
+    log_green_channel = (log_green_channel - np.min(log_green_channel)) / (np.max(log_green_channel) - np.min(log_green_channel)) * 255
+    log_red_channel = (log_red_channel - np.min(log_red_channel)) / (np.max(log_red_channel) - np.min(log_red_channel)) * 255
+
+    log_blue_channel = log_blue_channel.astype(np.uint8)
+    log_green_channel = log_green_channel.astype(np.uint8)
+    log_red_channel = log_red_channel.astype(np.uint8)
+
+    log_image_bgr = cv2.merge([log_blue_channel, log_green_channel, log_red_channel])
+
+    return log_image_bgr
 
 def showVideo():
     recognize_thread = threading.Thread(target=recognize_person_thread)
@@ -116,6 +135,7 @@ def showVideo():
     
     while True:
         ret, frame = webcam.read()
+        frame_equalized = log_transform(frame)
         if ret:
             cv2.imshow("Webcam", frame)
     
@@ -128,8 +148,9 @@ def showVideo():
 def recognize_person_thread():
     while True:
         ret, frame = webcam.read()
+        frame_equalized = log_transform(frame)
         if ret:
-            recognizePerson(frame)
+            recognizePerson(frame_equalized)
             time.sleep(3)
 
 def resolveDeviceId():
@@ -147,7 +168,7 @@ def resolveDeviceId():
 
 def sendLogEvent(identified_user, accuracy, type):
     time = datetime.now().strftime("%m/%d/%Y, %H:%M:%S")
-    # ADD A 'TYPE' like FEAR or ACCESS to the logs 
+    
     data = {
         'time': time,
         'device_id': device_id,
